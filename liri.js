@@ -17,29 +17,42 @@ switch (command) {
         findShow(band);
         break;
 
-    case `spotify-this-song`:
-        const song = process.argv[3];
-        spotify.search({ type: 'track', query: song },
-            function (err, data) {
-                if (err) {
-                    return console.log('Error occurred: ' + err);
-                }
+    //-----------------------------------------------------------------------------
 
-                console.log("Artist: " + data.tracks.items.song.artists);
-            })
+    case `spotify-this-song`:
+        let song = process.argv[3];
+        findSong(song);
         break;
 
-
+    //-----------------------------------------------------------------------------
     case `movie-this`:
         let movie = process.argv[3];
         findMovie(movie);
         break;
 
-
+    //-----------------------------------------------------------------------------
     case `do-what-it-says`:
-        break;
 
+        fs.readFile("random.txt", "utf8", function (error, data) {
+            if (error) {
+                return console.log(error);
+            }
+
+            var dataArr = data.split(",");
+            var operator = dataArr[0];
+            var parameter = dataArr[1];
+            switch (operator) {
+                case "spotify-this-song":
+                    spotifyThis(parameter);
+                    break;
+                case "movie-this":
+                    movieThis(parameter);
+                    break;
+            }
+        });
+        break;
 }
+//-----------------------------------------------------------------------------
 
 function findShow(band) {
     var URL = "https://rest.bandsintown.com/artists/" + band + "/events?app_id=codingbootcamp";
@@ -58,12 +71,31 @@ function findShow(band) {
     })
 }
 
+//-----------------------------------------------------------------------------
+
+function findSong(song) {
+    var URL = "https://api.spotify.com/v1/tracks/0hrBpAOgrt8RXigk83LLNE" + song;
+    spotify.request(URL).then(function (response) {
+
+        var jsonData = response.data;
+
+        var showData = [
+            "Artist: " + jsonData.artist,
+            "Song: " + jsonData.song,
+            "Preview Link: " + jsonData.link,
+            "Album: " + jsonData.album
+        ].join("\n\n");
+        console.log(showData);
+    })
+}
+
+//-----------------------------------------------------------------------------
 
 function findMovie(movie) {
     var URL = "http://www.omdbapi.com/?apikey=trilogy&t=" + movie;
 
     axios.get(URL).then(function (response) {
-        
+
         var jsonData = response.data;
         console.log(jsonData);
 
